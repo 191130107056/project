@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Employee Portal</title>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            border: 0px solid white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .color {
+            background-color: black;
+            color: white;
+        }
+
+        .New-employee-button {
+            background-color: black;
+            color: white;
+        }
+
+        .New-employee-button:hover {
+            background-color: red;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button onclick="showNewEmployee()" class="New-employee-button" onmouseover="changeButtonColor(this, true)"
+        onmouseout="changeButtonColor(this, false)">New Employee</button>
+    <button onclick="showAllEmployees()" class="New-employee-button" onmouseover="changeButtonColor(this, true)"
+        onmouseout="changeButtonColor(this, false)">All Employees</button>
+    <button onclick="showFullDump()" class="New-employee-button" onmouseover="changeButtonColor(this, true)"
+        onmouseout="changeButtonColor(this, false)">Full Dump</button> <button onclick="showPartialDump()"
+        class="New-employee-button" onmouseover="changeButtonColor(this, true)"
+        onmouseout="changeButtonColor(this, false)">Partial Dump</button>
+
+    <div id="newEmployeeDiv" class="hidden">
+        <!-- <h2>New Employee</h2> -->
+        <label for="empCode">Employee Code:</label>
+        <input type="text" id="empCode"><br>
+        <label for="empName">Name:</label>
+        <input type="text" id="empName"><br>
+        <label for="empAge">Age:</label>
+        <input type="text" id="empAge"><br>
+        <label for="empGender">Gender:</label>
+        <input type="radio" id="male" name="gender" value="Male" checked>
+        <label for="male">Male</label>
+        <input type="radio" id="female" name="gender" value="Female">
+        <label for="female">Female</label><br>
+        <label for="empDepartment">Department:</label>
+        <select id="empDepartment"></select><br>
+        <label for="empDesignation">Designation:</label>
+        <select id="empDesignation"></select><br>
+        <label for="empSalary">Salary:</label>
+        <input type="text" id="empSalary"><br>
+        <button onclick="addEmployee()" class="New-employee-button" onmouseover="changeButtonColor(this, true)"
+            onmouseout="changeButtonColor(this, false)">Add Employee</button>
+    </div>
+
+    <div id="allEmployeesDiv" class="hidden">
+        <!-- <h2>All Employees</h2> -->
+        <label for="filterDepartment">Filter Employees by:</label>
+        <select id="filterDepartment"></select>
+        <!-- <label for="filterDesignation">Filter by Designation:</label> -->
+        <select id="filterDesignation"></select>
+        <button onclick="filterEmployees()" class="New-employee-button" onmouseover="changeButtonColor(this, true)"
+            onmouseout="changeButtonColor(this, false)">Filter</button>
+        <table id="employeeTable">
+            <thead>
+                <tr class="color">
+                    <th data-sort-by="empcode" onclick="sortEmployees('empcode')">Emp Code</th>
+                    <th data-sort-by="name" onclick="sortEmployees('name')">Name</th>
+                    <th data-sort-by="age" onclick="sortEmployees('age')">Age</th>
+                    <th data-sort-by="gender" onclick="sortEmployees('gender')">Gender</th>
+                    <th data-sort-by="department" onclick="sortEmployees('department')">Department</th>
+                    <th data-sort-by="designation" onclick="sortEmployees('designation')">Designation</th>
+                    <th data-sort-by="salary" onclick="sortEmployees('salary')">Salary</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="employeeTableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="fullDumpDiv" class="hidden">
+        <pre id="fullDumpData"></pre>
+    </div>
+
+    <div id="partialDumpDiv" class="hidden">
+        <pre id="partialDumpData"></pre>
+    </div>
+
+    <script>
+        const employees = [
+            { empcode: 'A102', name: 'James', age: 37, gender: 'Male', department: 'Finance', designation: 'Manager', salary: 65000 },
+            { empcode: 'A106', name: 'Mary', age: 24, gender: 'Female', department: 'Technology', designation: 'Vice-President', salary: 68000 },
+            { empcode: 'A122', name: 'Bob', age: 23, gender: 'Male', department: 'Marketing', designation: 'Manager', salary: 51000 },
+            { empcode: 'A088', name: 'Julia', age: 33, gender: 'Female', department: 'Finance', designation: 'Vice-President', salary: 70000 },
+            { empcode: 'A055', name: 'Steve', age: 27, gender: 'Male', department: 'Technology', designation: 'Manager', salary: 53000 },
+            { empcode: 'A208', name: 'Katherine', age: 29, gender: 'Female', department: 'Marketing', designation: 'Manager', salary: 61000 },
+            { empcode: 'A181', name: 'Edwards', age: 31, gender: 'Male', department: 'Finance', designation: 'Trainee', salary: 49000 },
+            { empcode: 'A029', name: 'Margaret', age: 32, gender: 'Female', department: 'Technology', designation: 'President', salary: 53000 },
+            { empcode: 'A029', name: 'Bill', age: 27, gender: 'Male', department: 'Operations', designation: 'Manager', salary: 58000 }
+        ];
+
+        const departments = Array.from(new Set(employees.map(employee => employee.department)));
+        const designations = Array.from(new Set(employees.map(employee => employee.designation)));
+
+        function showNewEmployee() {
+            hideAllDivs();
+            document.getElementById("newEmployeeDiv").classList.remove("hidden");
+            
+        }
+
+        function showAllEmployees() {
+            hideAllDivs();
+            document.getElementById("allEmployeesDiv").classList.remove("hidden");
+            populateFilterOptions();
+            displayAllEmployees();
+        }
+
+        function showFullDump() {
+            hideAllDivs();
+            document.getElementById("fullDumpDiv").classList.remove("hidden");
+            showFullDumpData();
+        }
+
+        function showPartialDump() {
+            hideAllDivs();
+            document.getElementById("partialDumpDiv").classList.remove("hidden");
+            showPartialDumpData();
+        }
+
+        function hideAllDivs() {
+            const divs = document.querySelectorAll("div");
+            divs.forEach(div => {
+                div.classList.add("hidden");
+            });
+        }
+
+        function populateFilterOptions() {
+            const departmentSelect = document.getElementById("filterDepartment");
+            departmentSelect.innerHTML = "";
+            const defaultDepartmentOption = document.createElement("option");
+            defaultDepartmentOption.value = "";
+            defaultDepartmentOption.textContent = "Choose Department";
+            departmentSelect.appendChild(defaultDepartmentOption);
+            departments.forEach(department => {
+                const option = document.createElement("option");
+                option.value = department;
+                option.textContent = department;
+                departmentSelect.appendChild(option);
+            });
+
+            const designationSelect = document.getElementById("filterDesignation");
+            designationSelect.innerHTML = "";
+            const defaultDesignationOption = document.createElement("option");
+            defaultDesignationOption.value = "";
+            defaultDesignationOption.textContent = "Choose Designation";
+            designationSelect.appendChild(defaultDesignationOption);
+            designations.forEach(designation => {
+                const option = document.createElement("option");
+                option.value = designation;
+                option.textContent = designation;
+                designationSelect.appendChild(option);
+            });
+
+            // Add default options for the new employee form
+            const empDepartmentSelect = document.getElementById("empDepartment");
+            empDepartmentSelect.innerHTML = "";
+            const defaultEmpDepartmentOption = document.createElement("option");
+            defaultEmpDepartmentOption.value = "";
+            defaultEmpDepartmentOption.textContent = "Choose Department";
+            empDepartmentSelect.appendChild(defaultEmpDepartmentOption);
+            departments.forEach(department => {
+                const option = document.createElement("option");
+                option.value = department;
+                option.textContent = department;
+                empDepartmentSelect.appendChild(option);
+            });
+
+            const empDesignationSelect = document.getElementById("empDesignation");
+            empDesignationSelect.innerHTML = "";
+            const defaultEmpDesignationOption = document.createElement("option");
+            defaultEmpDesignationOption.value = "";
+            defaultEmpDesignationOption.textContent = "Choose Designation";
+            empDesignationSelect.appendChild(defaultEmpDesignationOption);
+            designations.forEach(designation => {
+                const option = document.createElement("option");
+                option.value = designation;
+                option.textContent = designation;
+                empDesignationSelect.appendChild(option);
+            });
+        }
+
+
+        function displayAllEmployees() {
+            const tableBody = document.getElementById("employeeTableBody");
+            tableBody.innerHTML = "";
+            employees.forEach(employee => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+      <td>${employee.empcode}</td>
+      <td>${employee.name}</td>
+      <td>${employee.age}</td>
+      <td>${employee.gender}</td>
+      <td>${employee.department}</td>
+      <td>${employee.designation}</td>
+      <td>${employee.salary}</td>
+      <td><td><button onclick="editEmployee('${employee.empcode}')" class="New-employee-button" onmouseover="changeButtonColor(this, true)" onmouseout="changeButtonColor(this, false)">Edit</button></td></td>
+    `;
+                tableBody.appendChild(row);
+            });
+
+            const headerCells = document.querySelectorAll("#employeeTable th");
+            headerCells.forEach(cell => {
+                cell.addEventListener("click", function () {
+                    sortEmployees(cell.dataset.sortBy);
+                });
+            });
+        }
+
+        function sortEmployees(sortBy) {
+            employees.sort((a, b) => {
+                if (sortBy === "name") {
+                    return a.name.localeCompare(b.name);
+                } else if (sortBy === "department") {
+                    return a.department.localeCompare(b.department);
+                } else if (sortBy === "age") {
+                    return a.age - b.age;
+                } else if (sortBy === "empcode") {
+                    return a.empcode.localeCompare(b.empcode);
+                } else if (sortBy === "designation") {
+                    return a.designation.localeCompare(b.designation);
+                } else if (sortBy === "salary") {
+                    return a.salary - b.salary;
+                }
+            });
+
+            displayAllEmployees();
+        }
+
+        function editEmployee(empCode) {
+            const employee = employees.find(emp => emp.empcode === empCode);
+            if (employee) {
+                document.getElementById("empCode").value = employee.empcode;
+                document.getElementById("empName").value = employee.name;
+                document.getElementById("empAge").value = employee.age;
+                document.getElementById(employee.gender.toLowerCase()).checked = true;
+                document.getElementById("empDepartment").value = employee.department;
+                document.getElementById("empDesignation").value = employee.designation;
+                document.getElementById("empSalary").value = employee.salary;
+
+                showNewEmployee();
+                document.getElementById("empCode").readOnly = true;
+                const addEmployeeButton = document.querySelector("#newEmployeeDiv button");
+                addEmployeeButton.textContent = "Edit Employee details";
+                addEmployeeButton.onclick = function () {
+                    updateEmployee(empCode);
+                };
+
+                // Set default option as selected for department and designation
+                document.getElementById("empDepartment").selectedIndex = 0;
+                document.getElementById("empDesignation").selectedIndex = 0;
+            }
+        }
+
+        function updateEmployee(empCode) {
+            const employeeIndex = employees.findIndex(emp => emp.empcode === empCode);
+            if (employeeIndex !== -1) {
+                const updatedEmployee = {
+                    empcode: document.getElementById("empCode").value,
+                    name: document.getElementById("empName").value,
+                    age: document.getElementById("empAge").value,
+                    gender: document.querySelector("input[name='gender']:checked").value,
+                    department: document.getElementById("empDepartment").value,
+                    designation: document.getElementById("empDesignation").value,
+                    salary: document.getElementById("empSalary").value
+                };
+
+                if (validateEmployee(updatedEmployee)) {
+                    employees[employeeIndex] = updatedEmployee;
+                    showAllEmployees();
+                    alert("Employee details have been updated.");
+
+
+                    document.getElementById("empCode").value = "",
+                        document.getElementById("empName").value = "",
+                        document.getElementById("empAge").value = "",
+                        document.querySelector("input[name='gender']:checked").value = "",
+                        document.getElementById("empDepartment").value = "",
+                        document.getElementById("empDesignation").value = "",
+                        document.getElementById("empSalary").value = ""
+
+
+                }
+            }
+        }
+
+        function addEmployee() {
+            const empCode = document.getElementById("empCode").value;
+            const existingEmployee = employees.find(emp => emp.empcode === empCode);
+            if (existingEmployee) {
+                alert("Employee already exists. Enter a different employee code.");
+                return;
+            }
+
+            const newEmployee = {
+                empcode: empCode,
+                name: document.getElementById("empName").value,
+                age: document.getElementById("empAge").value,
+                gender: document.querySelector("input[name='gender']:checked").value,
+                department: document.getElementById("empDepartment").value,
+                designation: document.getElementById("empDesignation").value,
+                salary: document.getElementById("empSalary").value
+            };
+
+
+            if (validateEmployee(newEmployee)) {
+                employees.push(newEmployee);
+                showAllEmployees();
+                alert("The new employee has been successfully added.");
+            }
+        }
+
+        function validateEmployee(employee) {
+            if (!employee.name.trim()) {
+                alert("Enter a name.");
+                return false;
+            }
+
+            if (!employee.age.trim()) {
+                alert("Enter an age.");
+                return false;
+            }
+
+            if (!employee.department) {
+                alert("Select a department.");
+                return false;
+            }
+
+            if (!employee.designation) {
+                alert("Choose a designation.");
+                return false;
+            }
+
+            return true;
+        }
+
+        function filterEmployees() {
+            const department = document.getElementById("filterDepartment").value;
+            const designation = document.getElementById("filterDesignation").value;
+
+            const filteredEmployees = employees.filter(employee => {
+                return (department === "" || employee.department === department) &&
+                    (designation === "" || employee.designation === designation);
+            });
+
+            const tableBody = document.getElementById("employeeTableBody");
+            tableBody.innerHTML = "";
+            filteredEmployees.forEach(employee => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+      <td>${employee.empcode}</td>
+      <td>${employee.name}</td>
+      <td>${employee.age}</td>
+      <td>${employee.gender}</td>
+      <td>${employee.department}</td>
+      <td>${employee.designation}</td>
+      <td>${employee.salary}</td>
+      <td><button onclick="editEmployee('${employee.empcode}')">Edit</button></td>
+    `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function showFullDumpData() {
+            const fullDumpData = employees
+                .map(
+                    employee =>
+                        ` ["${employee.empcode}:: ${employee.name} :: ${employee.age} :: ${employee.gender} :: ${employee.department} :: ${employee.designation} :: ${employee.salary}"]`
+                )
+                .join(" ,");
+            document.getElementById("fullDumpData").textContent = fullDumpData;
+        }
+
+
+        function showPartialDumpData() {
+            const partialDumpData = employees
+                .map(employee => `Code:${employee.empcode}, Name:${employee.name}, Age:${employee.age}`)
+                .join(" :: ");
+            document.getElementById("partialDumpData").textContent = partialDumpData;
+        }
+        // function changeButtonColor(button, isKeyPressed) {
+        //   if (isKeyPressed) {
+        //     button.classList.add('light-blue');
+        //   } else {//     button.classList.remove('light-blue');
+        //   }
+        // }
+        //   function changeButtonColor(button, isKeyPressed) {
+        //   if (isMouseOver) {
+        //     button.style.backgroundColor = "darkred";
+        //   } else {
+        //     button.style.backgroundColor = "red";
+        //   }
+        // }
+
+        function changeButtonColor(button, isMouseOver) {
+            if (isMouseOver) {
+                button.style.backgroundColor = "red"; // Change to desired color
+            } else {
+                button.style.backgroundColor = "black"; // Reset to default color
+            }
+        }
+
+    </script>
+</body>
+
+</html>

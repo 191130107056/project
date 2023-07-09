@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style type="text/css">
+    .table1 {
+      border: 1px solid black;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    .th1 {
+      background-color: black;
+      color: white;
+      border: 1px solid white;
+      padding-left: 15px;
+      padding-right: 15px;
+      cursor: pointer;
+    }
+    .td1 {
+      border: 1px solid black;
+      text-align: center;
+    }
+    .red {
+      background-color: red;
+    }
+    .grey {
+      background-color: grey;
+    }
+    .green {
+      background-color: green;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h2 id="titleLine">Persons</h2>
+
+  <div id="persons"></div>
+
+  <div id="newMemberForm" class="hidden">
+    <h3>Add New Member</h3>
+    Name: <input type="text" id="nameInput"><br>
+    Old Weight: <select id="oldWeightInput"></select><br>
+    New Weight: <select id="newWeightInput"></select><br>
+    <button onclick="addMember()">Add</button>
+  </div>
+
+  <script>
+    var persons = [
+      { name: 'Jack', oldWeight: 65, newWeight: 68 },
+      { name: 'Mary', oldWeight: 55, newWeight: 53 },
+      { name: 'Bob', oldWeight: 71, newWeight: 66 },
+      { name: 'Steve', oldWeight: 62, newWeight: 68 },
+      { name: 'James', oldWeight: 81, newWeight: 77 },
+      { name: 'Julia', oldWeight: 52, newWeight: 52 },
+      { name: 'Michael', oldWeight: 68, newWeight: 68 },
+      { name: 'Bill', oldWeight: 60, newWeight: 61 },
+      { name: 'Sonny', oldWeight: 61, newWeight: 60 }
+    ];
+
+    showPersons(persons);
+
+    function showPersons(persons) {
+      var title = document.getElementById('titleLine');
+      title.innerHTML = 'Persons';
+
+      var element = document.getElementById('persons');
+      element.innerHTML = '<table class="table1">' +
+        '<tr>' +
+        '<th class="th1" onclick="sortTable(\'name\')">Name</th>' +
+        '<th class="th1" onclick="sortTable(\'oldWeight\')">Old Weight</th>' +
+        '<th class="th1" onclick="sortTable(\'newWeight\')">New Weight</th>' +
+        '</tr>' +
+        persons.map(function (person, index) {
+          var weightClass = '';
+          var nameClass = '';
+          var oldWeightClass = '';
+
+          if (person.newWeight > person.oldWeight) {
+            weightClass = 'red';
+            nameClass = 'red';
+            oldWeightClass = 'red';
+          } else if (person.newWeight === person.oldWeight) {
+            weightClass = 'grey';
+            nameClass = 'grey';
+            oldWeightClass = 'grey';
+          } else {
+            weightClass = 'green';
+            nameClass = 'green';
+            oldWeightClass = 'green';
+          }
+
+          var rowClass = index % 2 === 0 ? 'even' : 'odd';
+
+          return '<tr class="' + rowClass + '">' +
+            '<td class="td1 ' + nameClass + '">' + person.name + '</td>' +
+            '<td class="td1 ' + oldWeightClass + '">' + person.oldWeight + '</td>' +
+            '<td class="td1 ' + weightClass + '">' + person.newWeight + '</td>' +
+            '</tr>';
+        }).join('') +
+        '</table>' +
+        '<br>' +
+        'New Weight between: ' +
+        '<select id="minWeight">' + getWeightOptions(persons, 'min') + '</select>' +
+        '<select id="maxWeight">' + getWeightOptions(persons, 'max') + '</select>' +
+        '<br><button onclick="filterTable()">Filter</button>' +
+        '<button onclick="clearFilter()">Clear Filter</button>' +
+        '<button onclick="toggleNewMemberForm()">Add New Member</button>';
+    }
+
+    function sortTable(field) {
+      persons.sort(function(a, b) {
+        if (a[field] < b[field]) return 1;
+        if (a[field] > b[field]) return -1;
+        return 0;
+      });
+      showPersons(persons);
+    }
+
+    function getWeightOptions(persons, type) {
+      var weights = persons.map(function(person) {
+        return type === 'min' ? person.oldWeight : person.newWeight;
+      });
+
+      var uniqueWeights = weights.filter(function(weight, index, self) {
+        return self.indexOf(weight) === index;
+      });
+
+      var options = uniqueWeights.map(function(weight) {
+        return '<option value="' + weight + '">' + weight + '</option>';
+      });
+
+      if (type === 'min') {
+        return '<option value="" selected>Select Min wt</option>' + options.join('');
+      } else if (type === 'max') {
+        return '<option value="" selected>Select Max wt</option>' + options.join('');
+      }
+
+      return '';
+    }
+       function getWeightOptions1(persons, type) {
+  var weights = [];
+  for (var i = 40; i <= 100; i++) {
+    weights.push(i);
+  }
+
+  var options = weights.map(function (weight) {
+    return '<option value="' + weight + '">' + weight + '</option>';
+  });
+
+  if (type === 'min') {
+    return '<option value="" selected>Select Min weight</option>' + options.join('');
+  } else if (type === 'max') {
+    return '<option value="" selected>Select Max weight</option>' + options.join('');
+  }
+
+  return '';
+}
+
+    function filterTable() {
+      var minWeight = document.getElementById('minWeight').value;
+      var maxWeight = document.getElementById('maxWeight').value;
+      var filteredPersons = persons.filter(function(person) {
+        if(minWeight < maxWeight){
+            let oldW = person.oldWeight >= minWeight && person.oldWeight <= maxWeight;
+            let newW = person.newWeight >= +minWeight && person.newWeight <= +maxWeight;
+            return oldW || newW;
+        }else{
+            return alert("Data is Empty")
+        }
+      });
+      showPersons(filteredPersons);
+
+      document.getElementById('minWeight').value = minWeight;
+      document.getElementById('maxWeight').value = maxWeight;
+    }
+
+    function clearFilter() { g
+      showPersons(persons);
+
+   
+      document.getElementById('minWeight').value = '';
+      document.getElementById('maxWeight').value = '';
+    }
+
+    function toggleNewMemberForm() {
+      var form = document.getElementById('newMemberForm');
+      if (form.className.indexOf('hidden') !== -1) {
+        form.className = '';
+      } else {
+        form.className = 'hidden';
+      }
+    }
+
+    function addMember() {
+      var nameInput = document.getElementById('nameInput').value;
+      var oldWeightInput = document.getElementById('oldWeightInput').value;
+      var newWeightInput = document.getElementById('newWeightInput').value;
+
+      var newMember = {
+        name: nameInput,
+        oldWeight: +oldWeightInput,
+        newWeight: +newWeightInput
+      };
+
+      persons = [...persons, newMember];
+      showPersons(persons);
+
+      document.getElementById('nameInput').value = '';
+      document.getElementById('oldWeightInput').value = '';
+      document.getElementById('newWeightInput').value = '';
+
+      toggleNewMemberForm();
+    }
+
+    var weightOptions = getWeightOptions1(persons, 'min');
+    document.getElementById('oldWeightInput').innerHTML = weightOptions;
+    document.getElementById('newWeightInput').innerHTML = weightOptions;
+  </script>
+</body>
+</html>
